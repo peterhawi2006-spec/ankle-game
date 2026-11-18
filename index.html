@@ -537,7 +537,7 @@ const SFX = {
   win: () => [659, 784, 988, 1319].forEach((f, i) => tone(f, i * .07, .14)),
   tick: () => tone(1250, 0, .012, "square", .01),
 };
-function sfx(n) { if (SFX[n]) SFX[n](); }
+function sfx(n) { if (PHONE && voice !== "off") return; if (SFX[n]) SFX[n](); }
 function setMute(m) { muted = m; try { localStorage.setItem("ankle-sfx", m ? "off" : "on"); } catch (_) {} const b = $("#snd"); if (b) { b.textContent = m ? "SOUND OFF" : "SOUND ON"; b.classList.toggle("on", !m); } if (!m) sfx("step"); }
 
 function fit() {
@@ -672,13 +672,21 @@ function stopTyping(finish) {
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 const PHONE = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Mac/i.test(navigator.platform || ""));
 if (PHONE) document.documentElement.classList.add("phone");
+const VDBG = location.hash === "#voicetest", VD = { engine: "?", starts: 0, error: "-", heard: "-", kind: "-", command: "-", events: 0 };
+function vlog(o) {
+  if (!VDBG) return; Object.assign(VD, o);
+  let p = document.getElementById("vdbg");
+  if (!p) { p = document.createElement("div"); p.id = "vdbg"; p.style.cssText = "position:fixed;left:0;top:0;z-index:99;max-width:100%;padding:6px 8px;font:12px/1.35 monospace;background:rgba(0,0,0,.85);color:#6ee787;white-space:pre-wrap;pointer-events:none"; document.body.appendChild(p); }
+  p.textContent = "VOICE TEST  engine: " + VD.engine + "  phone mode: " + (PHONE ? "yes" : "no") + "  state: " + voice + "  starts: " + VD.starts + "  events: " + VD.events +
+    "\nlast error: " + VD.error + "\nheard (" + VD.kind + "): " + VD.heard + "\nlast command: " + VD.command;
+}
 let dict = null, dictLang = true, voice = "off", rec = null, vFails = 0, vBuf = "", vPart = "", vWait = 0, vMute = 0, vDone = "", vCmd = "", vFiredAt = 0, vHint = 0;
 const V_CMD = [["next", /\b(next|necks|nex) slides?$/], ["back", /\b(go back|previous slide)$/]];
 const V_LABEL = { off: "VOICE OFF", on: "VOICE ON", wait: "VOICE ...", paused: "VOICE PAUSED", blocked: "MIC BLOCKED", none: "NO VOICE", net: "NO INTERNET", error: "VOICE ERROR" };
 const vNorm = t => t.toLowerCase().replace(/[^a-z ]+/g, " ").replace(/\s+/g, " ").trim();
 function voiceMatch(t) { for (const [c, re] of V_CMD) if (re.test(t)) return c; return null; }
 function voxHTML() { return `<button id="vox" class="sndb ${voice === "on" ? "on" : voice === "off" ? "" : "warn"}" title="Voice control (V): say NEXT or NEXT SLIDE, GO BACK or PREVIOUS SLIDE">${V_LABEL[voice]}</button>`; }
-function voiceUI() { const b = $("#vox"); if (b) { b.textContent = V_LABEL[voice]; b.className = "sndb " + (voice === "on" ? "on" : voice === "off" ? "" : "warn"); } }
+function voiceUI() { vlog({ engine: dict ? "claude dictation" : SR ? "browser" : "none" }); const b = $("#vox"); if (b) { b.textContent = V_LABEL[voice]; b.className = "sndb " + (voice === "on" ? "on" : voice === "off" ? "" : "warn"); } }
 function voiceHeard(t) {
   const h = $(".hint"); if (!h) return;
   if (h.dataset.o == null) h.dataset.o = h.innerHTML;
@@ -687,6 +695,7 @@ function voiceHeard(t) {
 }
 function voiceFeed(text, final) {          // every piece of recognised speech passes through here
   const now = Date.now(); let t = vNorm(text || "");
+  if (VDBG && (text || "").trim()) vlog({ heard: JSON.stringify(text), kind: final ? "settled" : "live", events: VD.events + 1 });
   if (vDone && now - vFiredAt > 30000) vDone = "";
   if (final && t && !vDone && now - vFiredAt < 2000 && (voiceMatch(t) || (t === "next" ? "next" : null)) === vCmd) return;   // repeat of the phrase just acted on
   if (!final && !t && !vPart) return;       // an empty live guess after a settled phrase changes nothing
@@ -705,12 +714,13 @@ function voiceFeed(text, final) {          // every piece of recognised speech p
   if (cmd) vWait = setTimeout(() => voiceDo(cmd), Math.max(550, vMute - now));
 }
 function voiceDo(cmd) {
-  vFiredAt = Date.now(); vMute = vFiredAt + 700; vCmd = cmd;
+  vFiredAt = Date.now(); vMute = vFiredAt + 700; vCmd = cmd; vlog({ command: cmd + " at " + new Date().toTimeString().slice(0, 8) });
   vDone = (vDone + " " + vPart).trim(); vBuf = vPart = "";
   if (cmd === "next") { if (typing) stopTyping(true); next(); } else back();
   voiceHeard(cmd === "next" ? "NEXT SLIDE" : "GO BACK");
 }
 function dictEnd(reason) {
+  vlog({ error: "dictation ended: " + reason });
   if (reason === "not_granted") voice = "blocked";
   else if (reason === "unavailable") { if (dictLang) { dictLang = false; voice = "paused"; } else voice = "none"; }
   else if (reason === "viewer_stopped" || reason === "stopped" || reason === "dismissed") voice = "off";
@@ -728,7 +738,7 @@ try {
   }, () => {});
 } catch (_) {}
 function nativeStart(auto) {                                     // auto = restarted by the page, not by a tap or key press
-  const r = rec = new SR(); r.lang = "en-US"; r.continuous = !PHONE; r.interimResults = true;
+  const r = rec = new SR(); r.lang = "en-US"; r.continuous = !PHONE; r.interimResults = true; vlog({ starts: VD.starts + 1 });
   if (voice !== "on") voice = "wait";
   r.onstart = () => { if (rec === r && voice === "wait") { voice = "on"; voiceUI(); } };
   r.onresult = e => {
@@ -737,6 +747,7 @@ function nativeStart(auto) {                                     // auto = resta
     voiceFeed(part, false);
   };
   r.onerror = e => {
+    vlog({ error: e.error + (e.message ? " (" + e.message + ")" : "") + " at " + new Date().toTimeString().slice(0, 8) });
     if (rec !== r) return; const c = e.error;
     if (c === "not-allowed" || c === "service-not-allowed" || c === "audio-capture") voice = auto && c === "not-allowed" ? "paused" : "blocked";   // some phones only allow a start from a tap: the next tap starts it again
     else if (c === "network") { if (++vFails >= 3) voice = "net"; }
@@ -747,13 +758,14 @@ function nativeStart(auto) {                                     // auto = resta
     if (rec !== r) return; rec = null; vDone = vPart = "";
     if (voice === "on" || voice === "wait") setTimeout(() => { if ((voice === "on" || voice === "wait") && !rec) { nativeStart(true); voiceUI(); } }, PHONE ? 120 : 300);
   };
-  try { r.start(); } catch (_) { rec = null; voice = auto ? "paused" : "error"; }
+  try { r.start(); } catch (x) { rec = null; voice = auto ? "paused" : "error"; vlog({ error: "start failed: " + (x && x.name) }); }
 }
 function voiceStart() {                                          // must run inside a click or key press
   vBuf = vPart = vDone = ""; clearTimeout(vWait);
   if (dict) {
     voice = "wait";
-    dict.start(dictLang ? { language: "en" } : undefined).catch(err => { if (voice === "wait") dictEnd(err && err.code); });
+    vlog({ starts: VD.starts + 1 });
+    dict.start(dictLang ? { language: "en" } : undefined).catch(err => { vlog({ error: "start rejected: " + (err && err.code) }); if (voice === "wait") dictEnd(err && err.code); });
   } else if (SR) nativeStart();
   else voice = "none";
   voiceUI();
@@ -765,6 +777,7 @@ function toggleVoice() {
     voiceUI(); sfx("back");
   } else { vFails = 0; voiceStart(); sfx("tick"); }
 }
+if (VDBG) setTimeout(() => vlog({ engine: dict ? "claude dictation" : SR ? "browser" : "none" }), 1500);
 addEventListener("click", () => { if (voice === "paused") voiceStart(); }, true);
 addEventListener("touchend", () => { if (voice === "paused") voiceStart(); }, true);
 
