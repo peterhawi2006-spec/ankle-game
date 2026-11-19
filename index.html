@@ -155,8 +155,8 @@ button:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--cyan);
 .quiz > * { transition: opacity .3s, transform .3s; }
 .quiz.form > *:not(.in) { opacity: 0; transform: translateX(36px); }
 .quiz.form > .press:not(.in) { visibility: hidden; animation: none; }
-.title-l .ch { display: inline-block; }
-.title-l .ch.drop, .tsub.drop, .players.drop { animation: chdrop 1.25s cubic-bezier(.35, 0, .9, .55) forwards; }
+.title-l .ch, .lv-l .ch { display: inline-block; }
+.title-l .ch.drop, .tsub.drop, .players.drop, .lv-l .drop { animation: chdrop 1.25s cubic-bezier(.35, 0, .9, .55) forwards; }
 @keyframes chdrop { 12% { transform: translate(0, -10px) rotate(0); } 100% { transform: translate(var(--dx), 780px) rotate(var(--rot)); } }
 #screen.zoom { transition: transform 1.05s cubic-bezier(.6, 0, .9, .4); }
 #screen.quake { animation: quake .3s steps(6) 1; }
@@ -192,6 +192,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--cyan);
 .card.quiz h2 { font-size: 52px; color: var(--yel); }
 .card.quiz .qopt { padding: 9px 14px; font-size: 32px; }
 .card.quiz .qres { font-size: 28px; line-height: 1.1; min-height: 0; flex: 1; }
+.qcap { position: absolute; left: 0; right: 0; top: 14px; text-align: center; font-family: var(--label); font-size: 12px; letter-spacing: 1px; color: var(--cyan); }
 .qhint { font-family: var(--label); font-size: 12px; letter-spacing: 1px; color: var(--yel); }
 .bhud.inq { position: static; width: auto; height: 60px; flex: none; }
 .bhud.inq .bhead { width: 75px; height: 60px; }
@@ -538,7 +539,9 @@ const SCENES = [
   ], { view: "FRONT VIEW. BLUE = SYNDESMOSIS, RED = FRACTURE" }),
 
   // =================================================================== LEVEL 06 — PLAYER 5 (locked content)
-  { type: "level", lv: 5, sub: "Functional testing, sport-specific exercises and the return-to-sport decision", art: "plain" },
+  { type: "level", lv: 5, sub: "Functional testing, sport-specific exercises and the return-to-sport decision", art: "plain", fall: "sprain" },
+  { type: "quiz", lv: 5, id: "sprain", n: 3, art: "injuries", show: [0], kicker: "REMEMBER HOW HE FELL AT THE START?", q: "WHAT DID HE INJURE?", opts: ["HIGH ANKLE SPRAIN", "LATERAL ANKLE SPRAIN", "ACHILLES TENDON RUPTURE"], ok: 1,
+    why: "His foot rolled inward. That overstretches the <b style=\"color:var(--coral)\">ATFL and CFL</b> on the outer side: a lateral ankle sprain." },
   L(5, "RETURN TO SPORT IS A PROCESS, NOT A DATE", ["PARTICIPATION", "SPORT", "PERFORMANCE"], "Ardern 2016; Smith 2021; Physio Network review; Mass General Brigham and Sanford Health protocols", [
     S("PROCESS", C.ink, "WHAT RTS MEANS", ["Return to sport is a process with three stages, not a single day", "Planning starts on day one of rehab, not at the end"], { hl: "all" }),
     S("STAGE 1", C.yel, "RETURN TO PARTICIPATION", ["The athlete trains again but is not ready to compete", "Example: back in team training on modified drills, not yet picked for matches"], { hl: 0 }),
@@ -614,6 +617,10 @@ const SCENES = [
     S("AFTER: ACHILLES", C.purple, "AFTER CLEARANCE: ACHILLES", ["Calf weakness often remains", "So calf loading continues after discharge"], { hl: -1, stat: ["80%", "return to play"] }),
   ]),
 
+  // the last boss question: an invented example case, judged with the pass marks taught in this level
+  { type: "quiz", lv: 5, id: "rts", n: 4, pic: "athlete", cap: "EXAMPLE CASE: HIS RESULTS AFTER REHAB", kicker: "HE WANTS TO PLAY AGAIN", q: "WHICH RESULT SAYS 'NOT YET'?",
+    opts: ["Y-BALANCE: 82% OF THE HEALTHY LEG", "SIDE HOP: 96% OF THE HEALTHY LEG", "PAIN WHEN JUMPING: NONE"], ok: 0,
+    why: "Hops and Y-balance must reach <b style=\"color:var(--green)\">90% or more</b> of the healthy side. At 82% he goes back one stage and is retested later." },
   // =================================================================== WRAP-UP
   L(5, "TAKE-HOME MESSAGES", ["POSITION DECIDES", "EXAMINE WITH INTENT", "REHAB BY CRITERIA", "RETURN IS SHARED"], "", [
     S("01", C.yel, "POSITION DECIDES THE INJURY", ["Inversion + plantarflexion: lateral sprain", "External rotation + dorsiflexion: high ankle sprain", "Forceful push-off: Achilles rupture"]),
@@ -759,6 +766,7 @@ function bottom(src, lv) {
 function render(flash) {
   clearInterval(animT); animT = null; stopTyping(false);
   if (boss.busy || boss.timers.length) bossClear();
+  if (lf.state || lf.timers.length) lfClear();
   const s = SCENES[si];
   if (s.type === "title") {
     introReset(); boss.hp = 4; boss.won.clear();                       // a fresh run: the boss is back to full health
@@ -779,6 +787,7 @@ function render(flash) {
     screen.innerHTML = `<div class="lv-l"><div class="lv-k">LEVEL</div><div class="lv-n">${L.n}</div><div class="lv-t">${L.t}</div><p class="lv-s">${s.sub}</p>
       <div class="lv-p"><span class="chip ghost">${L.p}</span><span class="ready">READY!</span></div></div>
       <div class="hero">${artHTML(s.art, 664, 560)}</div>${bottom("", s.lv)}`;
+    if (s.fall && lfWanted(s)) { lf.state = 1; lfLater(550, lfPlay); }
   } else if (s.type === "lesson") {
     const L = LEVELS[s.lv];
     screen.innerHTML = `<div class="top"><span class="chip">${s.chip || "LV " + L.n}</span><h1>${s.title}</h1><span class="chip ghost">${s.who || L.p}</span></div>
@@ -801,8 +810,10 @@ function render(flash) {
       <div class="qres"></div><div class="qhint"></div></div>${bottom(s.src || "", s.lv)}`;
     screen.querySelectorAll(".qopt").forEach(b => b.onclick = () => quizPick(+b.dataset.q));
     quiz.step = 1; quizHint();
+    const arrive = quiz.arrive; quiz.arrive = "";
     if (boss.won.has(s.id)) quizShowAnswer(s);                        // already answered: coming back to it shows the answer, no second hit
-    else if (bossOn && bossAnim && !reduce) bossEnter(s.n, null);
+    else if (arrive === "dive") quizForm();                           // we came in through his ankle: the dragon has already landed
+    else if (arrive !== "flown" && bossOn && bossAnim && !reduce) bossEnter(s.n, null);
   } else if (s.type === "refs") {
     screen.innerHTML = `<div class="top"><span class="chip">REFERENCES</span><h1>SOURCES USED IN THIS PRESENTATION (${st + 1}/${s.steps.length})</h1></div>
       <div class="refs">` + s.steps[st].map(r => `<p>${r}</p>`).join("") + `</div>${bottom("", 5)}`;
@@ -1051,7 +1062,7 @@ addEventListener("touchend", () => { if (voice === "paused") voiceStart(); }, tr
 /* ---------- the boss: a skeleton dragon whose health carries across the four questions (one bar per correct answer) */
 let bossOn = true, bossAnim = true;                                                      // bossAnim: the tests switch the fly-in and hit animations off
 const boss = { hp: 4, busy: false, timers: [], flap: 0, done: null, won: new Set() };
-const quiz = { step: 0 };
+const quiz = { step: 0, arrive: "" };
 function bossBar(hp) { return `<div class="bbar">` + [0, 1, 2, 3].map(i => `<i class="${i < hp ? "on" : ""}"></i>`).join("") + `</div>`; }
 function bossImg(hp, wing) { const B = A.boss; return hp <= 0 ? B.ko : B[wing || "up"][4 - hp]; }
 function bossHUD(cls) { const B = A.boss; return `<div class="bhud${cls || ""}"><div class="bcol"><div class="bname">BONE DRAGON</div>${bossBar(boss.hp)}</div><span class="bha">HA HA!</span><img class="bhead" alt="" width="${B.hw}" height="${B.hh}" src="${B.head[4 - boss.hp]}"></div>`; }
@@ -1089,11 +1100,16 @@ function bossHit(from, done) {                                                  
 
 /* ---------- boss questions placed inside the levels: a picture, three answers, one hit on the boss for the right one */
 function quizPicHTML(s) {
+  if (s.art) return artHTML(s.art, 660, 556);
+  if (s.pic === "athlete") { const R = A.runner; return `<div class="qpic"><img class="pix" alt="" src="${R.frames[1]}" width="${R.w * 5}" height="${R.h * 5}"></div><div class="qcap">${s.cap || ""}</div>`; }
   if (s.pic === "xray") { const X = A.xray; return `<div class="qpic"><img alt="X-ray" src="${X.src}" width="${Math.round(540 * X.w / X.h)}" height="540"></div>`; }
   const W = A.weber; return `<div class="qpic"><img class="pix" alt="" src="${W.imgs[s.pic]}" width="${W.w * 5}" height="${W.h * 5}"></div>`;
 }
 function quizHint() { const h = $(".qhint"); if (h) h.textContent = quiz.step === 2 ? (PHONE ? "TAP > TO CONTINUE" : "PRESS ENTER TO CONTINUE") : (PHONE ? "TAP YOUR ANSWER" : "PRESS 1, 2 OR 3"); }
-function quizShowAnswer(s) { quiz.step = 2; screen.querySelectorAll(".qopt").forEach((b, i) => b.classList.add(i === s.ok ? "yes" : "no")); $(".qres").innerHTML = s.why; quizHint(); }
+function quizShowAnswer(s) {
+  quiz.step = 2; screen.querySelectorAll(".qopt").forEach((b, i) => b.classList.add(i === s.ok ? "yes" : "no")); $(".qres").innerHTML = s.why; quizHint();
+  (s.show || []).forEach(i => { const ov = screen.querySelector(`.art img.ov[data-i="${i}"]`); if (ov) ov.classList.add("show", "blink"); });
+}
 function quizHUD() { const h = $(".bhud"); if (h) h.outerHTML = bossHUD(" inq"); }
 function quizPick(i) {
   const s = SCENES[si]; if (s.type !== "quiz" || quiz.step !== 1 || boss.busy) return;
@@ -1107,6 +1123,48 @@ function quizReveal() {
   if (boss.won.has(s.id)) return;
   boss.won.add(s.id); const from = boss.hp; boss.hp = Math.max(0, from - 1);          // the damage counts even if the animation is skipped
   if (bossOn && bossAnim && !reduce) bossLater(1000, () => bossHit(from, quizHUD)); else quizHUD();
+}
+function quizForm() {                                               // the shutter opens from the ankle, the bones pull back into place, the question builds itself
+  const art = $(".art"), wrap = art.querySelector(".wrap"), card = $(".card.quiz");
+  introTiles(screen.offsetLeft + 640, screen.offsetTop + 360, false, 900, () => { const c = $("#dive"); if (c) c.remove(); });
+  if (wrap) { art.classList.add("form"); wrap.style.transformOrigin = "25% 60%"; wrap.style.transform = "translate(446px, -63px) scale(4.4)"; void wrap.offsetWidth; wrap.classList.add("settle"); wrap.style.transform = "none"; }
+  card.classList.add("form"); sfx("level");
+  [...card.children].forEach((el, i) => lfLater(1150 + i * 110, () => { el.classList.add("in"); if (i < 6) sfx("tick"); }));
+  lfLater(1150 + card.children.length * 110 + 300, () => { art.classList.remove("form"); if (wrap) { wrap.classList.remove("settle"); wrap.style.transform = ""; } card.classList.remove("form"); });
+}
+/* ---------- the athlete comes back: he drops onto a level screen, the letters fall again, and the question about him follows */
+const lf = { state: 0, timers: [], blink: 0 };                      // 1 falling, 2 sitting hurt, 3 the camera is going in
+const LF = { S: 4, X: 110, Y: 334 };
+function lfWanted(s) { return bossAnim && !reduce && !!A.runner && !boss.won.has(s.fall); }
+function lfLater(ms, fn) { lf.timers.push(setTimeout(fn, ms)); }
+function lfClear() { lf.timers.forEach(clearTimeout); lf.timers = []; clearInterval(lf.blink); lf.state = 0; intro.run = (intro.run || 0) + 1; const cv = $("#dive"); if (cv) cv.remove(); screen.classList.remove("zoom", "quake"); screen.style.transform = ""; }
+function lfQuake() { screen.classList.remove("quake"); void screen.offsetWidth; screen.classList.add("quake"); }
+function lfPlay() {
+  if (lf.state !== 1) return; const R = A.runner, at = y => `translate(${LF.X}px, ${y}px) scale(${LF.S})`;
+  screen.querySelectorAll(".lv-k, .lv-n, .lv-t").forEach(el => { el.innerHTML = [...el.textContent].map(c => c === " " ? " " : `<span class="ch">${c}</span>`).join(""); });
+  const img = document.createElement("img"); img.className = "runner"; img.id = "lfr"; img.alt = ""; img.width = R.dw; img.height = R.dh; img.src = R.down[0];
+  img.style.transformOrigin = "0 0"; img.style.transform = at(-360); screen.appendChild(img); void img.offsetWidth; sfx("move");
+  img.style.transition = "transform .5s cubic-bezier(.5, 0, 1, .7)"; img.style.transform = at(60);                    // he comes down from where he fell off the title
+  lfLater(500, () => {                                               // straight through the heading
+    sfx("hurt"); lfQuake();
+    screen.querySelectorAll(".lv-l .ch, .lv-s, .lv-p").forEach(el => { el.style.setProperty("--dx", (Math.random() * 160 - 80).toFixed(0) + "px"); el.style.setProperty("--rot", (Math.random() * 540 - 270).toFixed(0) + "deg"); el.style.animationDelay = (Math.random() * 0.35).toFixed(2) + "s"; el.classList.add("drop"); });
+    img.style.transition = "transform .45s cubic-bezier(.4, 0, 1, .8)"; img.style.transform = at(LF.Y);
+  });
+  lfLater(950, () => lfLand(false));
+}
+function lfLand(skipped) {                                           // sitting on the floor, holding the ankle
+  lf.timers.forEach(clearTimeout); lf.timers = []; lf.state = 2; const R = A.runner;
+  let img = $("#lfr"); if (!img) { img = document.createElement("img"); img.className = "runner"; img.id = "lfr"; img.alt = ""; img.width = R.dw; img.height = R.dh; img.style.transformOrigin = "0 0"; screen.appendChild(img); }
+  img.style.transition = "none"; img.style.transform = `translate(${LF.X}px, ${LF.Y}px) scale(${LF.S})`; img.src = R.down[0];
+  if (skipped) screen.querySelectorAll(".lv-l > *").forEach(el => { el.style.visibility = "hidden"; });
+  sfx("hurt"); lfQuake(); let m = 0; clearInterval(lf.blink); lf.blink = setInterval(() => { m ^= 1; img.src = R.down[m]; }, 170);
+  const say = document.createElement("div"); say.className = "say"; say.style.left = (LF.X + 290) + "px"; say.style.top = (LF.Y - 30) + "px"; say.textContent = "OW. REMEMBER ME?"; screen.appendChild(say);
+}
+function lfDive() {                                                  // the camera goes for the ankle and the shutter closes on it
+  lf.state = 3; const R = A.runner, ax = LF.X + R.ankle[0] * LF.S, ay = LF.Y + R.ankle[1] * LF.S;
+  screen.style.transformOrigin = ax + "px " + ay + "px"; screen.classList.add("zoom"); screen.style.transform = "scale(12)"; sfx("scene");
+  lfLater(300, () => introTiles(screen.offsetLeft + ax, screen.offsetTop + ay, true, 760));
+  lfLater(1100, () => { quiz.arrive = "dive"; si++; st = 0; render(false); });
 }
 function tableStep() {
   const s = SCENES[si], n = s.cols.length;
@@ -1250,6 +1308,13 @@ function next() {
   if (s.type === "map") { sfx("level"); return go(levelScene(mapSel)); }
   if (s.type === "end") { sfx("start"); return go(0); }
   if (s.type === "quiz") { if (boss.busy) return bossEnd(); if (quiz.step === 1) return quizReveal(); }
+  if (s.type === "level" && s.fall && lf.state) {                    // the athlete is on this screen: Enter moves his scene along
+    if (boss.busy) return bossEnd();
+    if (lf.state === 1) return lfLand(true);
+    const q = SCENES[si + 1];
+    if (lf.state === 2) { lf.state = 3; return bossOn ? bossEnter(q.n, lfDive) : lfDive(); }
+    quiz.arrive = "flown"; lfClear(); si++; st = 0; return render(true);
+  }
   if (s.steps && st < s.steps.length - 1) { st++; if (s.type === "refs") { sfx("step"); return render(false); } stepSound(s.steps[st]); return s.type === "table" ? tableStep() : step(); }
   const n = SCENES[si + 1];
   if (n) { if (n.type === "level") sfx("level"); else if (n.type === "end") sfx("win"); else if (n.type === "lesson") stepSound(n.steps[0]); else sfx("scene"); }
