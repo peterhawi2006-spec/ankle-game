@@ -134,9 +134,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--cyan);
 .runner { position: absolute; left: 0; top: 0; z-index: 6; pointer-events: none; transform-origin: 50% 100%; image-rendering: pixelated; }
 .runner.fall { transition: transform .5s cubic-bezier(.55, 0, 1, .55); }
 .runner.tip { transition: transform .16s ease-in; }
-#dive { position: absolute; inset: 0; z-index: 8; background: #f0c49e; pointer-events: none; transition: clip-path .62s cubic-bezier(.5, 0, .9, .5); }
-#dive.out { animation: diveout .8s linear forwards; }
-@keyframes diveout { 0% { background: #f0c49e; opacity: 1; } 22% { background: #c8506a; opacity: .96; } 50% { background: #5a2748; opacity: .7; } 100% { background: #131222; opacity: 0; } }
+#dive { position: absolute; left: 0; top: 0; z-index: 8; pointer-events: none; image-rendering: pixelated; }
 .art { transition: background .3s, border-color .3s; }
 .art.form { overflow: visible; background: transparent; border-color: transparent; }
 .art .wrap.settle { transition: transform 1.5s cubic-bezier(.6, 0, .2, 1); }
@@ -856,7 +854,7 @@ addEventListener("touchend", () => { if (voice === "paused") voiceStart(); }, tr
 /* ---------- intro: he walks toward us, trips on the title, the letters fall, the camera closes in on his ankle, and the class guesses */
 let introOff = false;
 const intro = { step: 0, timers: [], walk: 0 };
-function introReset() { const cv = $("#dive"); if (cv) cv.remove(); intro.timers.forEach(clearTimeout); intro.timers = []; clearInterval(intro.walk); intro.step = 0; screen.classList.remove("zoom", "quake"); screen.style.transform = ""; }
+function introReset() { const cv = $("#dive"); if (cv) cv.remove(); intro.run = (intro.run || 0) + 1; intro.timers.forEach(clearTimeout); intro.timers = []; clearInterval(intro.walk); intro.step = 0; screen.classList.remove("zoom", "quake"); screen.style.transform = ""; }
 function introLater(ms, fn) { intro.timers.push(setTimeout(fn, ms)); }
 function introPlay() {
   intro.step = 1; const R = A.runner, S = 4;
@@ -896,12 +894,30 @@ function introPlay() {
   };
   requestAnimationFrame(walk);
 }
-function introDive(ax, ay) {                                                 // the camera goes into the ankle: skin fills the view
+/* the pixel shutter: square tiles grow until they close on one point, then shrink away from a point to open the next page */
+function introTiles(fx, fy, closing, ms, done) {
+  let cv = $("#dive");
+  if (!cv) { cv = document.createElement("canvas"); cv.id = "dive"; cv.width = stage.clientWidth; cv.height = stage.clientHeight; stage.appendChild(cv); }
+  const g = cv.getContext("2d"), W = cv.width, H = cv.height, T = 40, cols = Math.ceil(W / T), rows = Math.ceil(H / T), C = ["#6edeee", "#ffd23f", "#ff6b6b"];
+  const far = Math.max(Math.hypot(fx, fy), Math.hypot(W - fx, fy), Math.hypot(fx, H - fy), Math.hypot(W - fx, H - fy)), t0 = performance.now(), tok = intro.run = (intro.run || 0) + 1;
+  const draw = now => {
+    if (intro.run !== tok || !cv.isConnected) return;
+    const k = Math.min(1, (now - t0) / ms); g.clearRect(0, 0, W, H);
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      const cx = c * T + T / 2, cy = r * T + T / 2, d = Math.hypot(cx - fx, cy - fy) / far;
+      let p = closing ? (k - (1 - d) * 0.72) / 0.28 : 1 - (k - d * 0.72) / 0.28; p = Math.max(0, Math.min(1, p));
+      if (p <= 0) continue;
+      const s = p >= 1 ? T : Math.max(8, Math.round(T * p / 8) * 8);                 // tiles grow and shrink in chunky steps
+      g.fillStyle = p >= 1 ? "#0f0e17" : C[(c * 7 + r * 13) % 3]; g.fillRect(Math.round(cx - s / 2), Math.round(cy - s / 2), s, s);
+    }
+    if (k < 1) requestAnimationFrame(draw); else if (done) done();
+  };
+  requestAnimationFrame(draw);
+}
+function introDive(ax, ay) {                                                 // the camera goes for the ankle while the shutter closes on it
   screen.style.transformOrigin = ax + "px " + ay + "px"; screen.classList.add("zoom"); screen.style.transform = "scale(12)"; sfx("scene");
-  const cv = document.createElement("div"); cv.id = "dive"; const cx = screen.offsetLeft + ax, cy = screen.offsetTop + ay;
-  cv.style.clipPath = `circle(0px at ${cx}px ${cy}px)`; stage.appendChild(cv);
-  introLater(430, () => { cv.style.clipPath = `circle(1700px at ${cx}px ${cy}px)`; });
-  introLater(1080, () => { if (intro.step === 1) introQuiz(true); });
+  introLater(300, () => introTiles(screen.offsetLeft + ax, screen.offsetTop + ay, true, 760));
+  introLater(1100, () => { if (intro.step === 1) introQuiz(true); });
 }
 const QUIZ = ["HIGH ANKLE SPRAIN", "LATERAL ANKLE SPRAIN", "ACHILLES TENDON RUPTURE"], QUIZ_OK = 1;
 function introQuiz(dive) {
@@ -914,12 +930,12 @@ function introQuiz(dive) {
     <div class="qres"></div><button class="press" id="nx" style="margin-top:0;font-size:22px">&gt; ${PHONE ? "TAP" : "ENTER"} TO REVEAL</button></div>`;
   screen.querySelectorAll(".qopt").forEach(b => b.onclick = () => introPick(+b.dataset.q));
   $("#nx").onclick = next;
-  if (!dive) { if (cv) cv.remove(); if (!reduce) { const fl = $("#flash"); fl.classList.remove("go"); void fl.offsetWidth; fl.classList.add("go"); } return; }
-  // we are inside the leg: the skin clears, the bones are huge around us, then the view pulls back and the page builds itself
+  if (!dive) { intro.run = (intro.run || 0) + 1; if (cv) cv.remove(); if (!reduce) { const fl = $("#flash"); fl.classList.remove("go"); void fl.offsetWidth; fl.classList.add("go"); } return; }
+  // the shutter opens from the ankle: the bones are huge around us, then the view pulls back and the page builds itself
   const art = screen.querySelector(".art"), wrap = art.querySelector(".wrap");
   wrap.style.transformOrigin = "25% 60%"; wrap.style.transform = "translate(446px, -63px) scale(4.4)"; void wrap.offsetWidth;
   wrap.classList.add("settle"); wrap.style.transform = "none"; sfx("level");
-  if (cv) { cv.classList.add("out"); setTimeout(() => cv.remove(), 850); }
+  introTiles(screen.offsetLeft + 640, screen.offsetTop + 360, false, 900, () => { const c = $("#dive"); if (c) c.remove(); });
   [...screen.querySelector(".quiz").children].forEach((el, i) => introLater(1150 + i * 120, () => { el.classList.add("in"); if (i < 5) sfx("tick"); }));
   introLater(1550, () => { art.classList.remove("form"); wrap.classList.remove("settle"); wrap.style.transform = ""; });
 }
