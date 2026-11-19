@@ -349,7 +349,7 @@ const SCENES = [
     S("CT", C.green, "CT", ["Complex fractures", "Lisfranc injuries"], { hl: 3 }),
   ]),
 
-  // =================================================================== LEVEL 04 — PLAYER 3 (Person 3's own slides 11-13)
+  // =================================================================== LEVEL 04 — PLAYER 3 (Person 3's own slides 11-14, updated document)
   { type: "level", lv: 3, sub: "Medication, conservative care and surgery", art: "injuries" },
   L(3, "MOST ANKLE INJURIES ARE MANAGED WITHOUT SURGERY", ["PEACE & LOVE", "SUPPORT", "MEDICATION", "INJECTIONS", "NON-OPERATIVE PATHWAYS"], "Dubois & Esculier 2020; Vuurberg 2018", [
     S("PEACE", C.yel, "PEACE (FIRST DAYS)", [kv("P", "Protect"), kv("E", "Elevate"), kv("A", "Avoid anti-inflammatories"), kv("C", "Compress"), kv("E", "Educate")], { sub: "Acute care: PEACE & LOVE (Dubois & Esculier, 2020)", hl: 0 }),
@@ -364,9 +364,15 @@ const SCENES = [
     S("SYNDESMOTIC", C.cyan, "SYNDESMOTIC SPRAIN", [kv("When", "unstable: widening on imaging, grade III"), kv("Procedure", "syndesmotic screw or suture-button (TightRope)"), "Suture-button allows natural micromotion, usually no removal"], { show: [1] }),
     S("RUPTURE", C.coral, "ACHILLES RUPTURE", [kv("When", "young athletes, late diagnosis, large gap"), kv("Procedure", "open or minimally invasive repair"), "Late ruptures: reconstruction (V-Y advancement, FHL transfer)"], { show: [4] }),
     S("TENDINOPATHY", C.green, "ACHILLES TENDINOPATHY", [kv("When", "after about 6 months of failed conservative care"), kv("Procedure", "debridement, gastrocnemius recession"), "Insertional: Haglund resection"], { show: [2, 3] }),
-    S("FRACTURES", C.purple, "FRACTURES & OTHERS", [kv("When", "unstable Weber B, Weber C; unstable Lisfranc; Jones fracture in athletes"), kv("Procedure", "ORIF; screw fixation")], { art: "fracture", anim: [0, 0, 0, 0, 0, 0, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], rest: 3, shake: true, sfx: "snap" }),
+    S("LISFRANC / JONES", C.purple, "LISFRANC / JONES FRACTURE", [kv("When", "unstable Lisfranc; Jones fracture in athletes"), kv("Procedure", "ORIF or fusion; intramedullary screw")], { show: [] }),
     S("SURGERY OR NOT?", C.coral, "ACHILLES: SURGERY OR NOT?", ["Surgery slightly lowers re-rupture risk", "But adds wound infection and sural nerve risk", "With early functional rehab, outcomes are similar (Myhrvold et al., 2022)"], { show: [4] }),
   ], { view: "RIGHT ANKLE, OUTER SIDE. COLOUR = INJURED STRUCTURE" }),
+  L(3, "WEBER GUIDES THE DECISION; STABILITY MAKES IT", "front", "", [
+    S("WEBER A", C.yel, "A: BELOW THE SYNDESMOSIS", [kv("Usually", "stable"), kv("Management", "conservative: boot or brace, early weight-bearing as tolerated")], { sub: "Ankle fractures: surgery or not?", show: [10, 7] }),
+    S("WEBER B", C.cyan, "B: AT THE SYNDESMOSIS", [kv("Usually", "depends on the medial side"), kv("Stable", "deltoid and medial malleolus intact, no widening on stress / weight-bearing X-ray: boot"), kv("Unstable", "medial clear space widening, bimalleolar: ORIF")], { show: [10, 8] }),
+    S("WEBER C", C.coral, "C: ABOVE THE SYNDESMOSIS", [kv("Usually", "unstable (syndesmosis torn)"), kv("Management", "ORIF of the fibula + syndesmotic fixation (screw or suture-button)")], { show: [10, 9] }),
+    S("KEY POINT", C.green, "KEY POINT", ["The letter suggests the plan, but stability decides it"], { art: "fracture", anim: [0, 0, 0, 0, 0, 0, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], rest: 3, shake: true, sfx: "snap" }),
+  ]),
   L(3, "TAKE-HOME MESSAGES: PART 3", ["HISTORY AND EXAM", "OTTAWA FIRST", "COMPARE SIDES", "CONSERVATIVE FIRST", "SURGERY AND PHYSIO"], "", [
     S("01", C.yel, "HISTORY SUGGESTS, EXAMINATION CONFIRMS", ["History suggests, examination confirms"], { hl: 0 }),
     S("02", C.cyan, "OTTAWA RULES BEFORE STRESS TESTS", ["Ottawa rules before stress tests"], { hl: 1 }),
