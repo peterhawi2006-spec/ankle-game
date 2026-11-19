@@ -1068,13 +1068,13 @@ const boss = { hp: 4, busy: false, timers: [], flap: 0, done: null, won: new Set
 const quiz = { step: 0, arrive: "" };
 function bossBar(hp) { return `<div class="bbar">` + [0, 1, 2, 3].map(i => `<i class="${i < hp ? "on" : ""}"></i>`).join("") + `</div>`; }
 function bossImg(hp, wing) { const B = A.boss; return hp <= 0 ? B.ko : B[wing || "up"][4 - hp]; }
-function bossHUD(cls) { const B = A.boss; return `<div class="bhud${cls || ""}"><div class="bcol"><div class="bname">BONE DRAGON</div>${bossBar(boss.hp)}</div><span class="bha">HA HA!</span><img class="bhead" alt="" width="${B.hw}" height="${B.hh}" src="${B.head[4 - boss.hp]}"></div>`; }
+function bossHUD(cls) { const B = A.boss; return `<div class="bhud${cls || ""}"><div class="bcol"><div class="bname">PETER SAAD</div>${bossBar(boss.hp)}</div><span class="bha">HA HA!</span><img class="bhead" alt="" width="${B.hw}" height="${B.hh}" src="${B.head[4 - boss.hp]}"></div>`; }
 function bossLater(ms, fn) { boss.timers.push(setTimeout(fn, ms)); }
 function bossClear() { boss.timers.forEach(clearTimeout); boss.timers = []; clearInterval(boss.flap); boss.busy = false; boss.done = null; const o = $("#boss"); if (o) o.remove(); }
 function bossEnd() { const d = boss.done; bossClear(); if (d) d(); }                      // also what Enter or a tap does: jump to the end of the moment
 function bossOpen(hp, q) {
   bossClear(); boss.busy = true; const B = A.boss, o = document.createElement("div"); o.id = "boss";
-  o.innerHTML = `<div class="btop"><div class="bname">BONE DRAGON</div>${bossBar(hp)}<div class="bq">${q}</div></div><img class="bimg" alt="" width="${B.w}" height="${B.h}" src="${bossImg(hp)}"><div class="bmsg"></div>`;
+  o.innerHTML = `<div class="btop"><div class="bname">PETER SAAD</div>${bossBar(hp)}<div class="bq">${q}</div></div><img class="bimg" alt="" width="${B.w}" height="${B.h}" src="${bossImg(hp)}"><div class="bmsg"></div>`;
   o.onclick = e => { e.stopPropagation(); bossEnd(); }; screen.appendChild(o); return o;
 }
 const BOSS_AT = "translate(328px, 190px) scale(4)";
