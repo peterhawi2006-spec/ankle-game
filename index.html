@@ -787,16 +787,32 @@ function vlog(o) {
     "\nlast error: " + VD.error + "\nheard (" + VD.kind + "): " + VD.heard + "\nlast command: " + VD.command + "\nmic boost: " + (VD.boost || (typeof boostOff !== "undefined" && boostOff ? "off" : "ready"));
 }
 let dict = null, dictLang = true, voice = "off", rec = null, vFails = 0, vBuf = "", vPart = "", vWait = 0, vMute = 0, vDone = "", vCmd = "", vFiredAt = 0, vHint = 0;
-const V_CMD = [["next", /\b(next|necks|nex) slides?$/], ["back", /\b(go back|previous slide)$/]];
+/* What counts as a command. Small words around it are fine ("okay next please", "alright, next slide", "can we go to the next slide"),
+   but "next" inside a normal sentence ("what comes next", "next we look at...") is not a command. */
+const V_OPEN = "(?:ok|okay|okey|k|alright|all right|right|yeah|yes|yep|good|great|perfect|cool|um|uh)";
+const V_STRONG = "(?:ok|okay|okey|alright|all right)";
+const V_CLOSE = "(?:please|now|guys|everyone|thanks|thank you)";
+const V_ASK = "(?:can we |can you |could we |could you |let s |lets |let us |please )?(?:go to the |move to the |go to |go |move to )?";
+const V_NEXT = "(?:next|necks|nex)(?: slides?)?";
+const V_TAIL = [                            // tested against the end of what was just said, even at the end of a long sentence
+  ["next", new RegExp("\\b(?:next|necks|nex) slides?(?: " + V_CLOSE + ")*$")],
+  ["next", new RegExp("\\b" + V_STRONG + " (?:so |now |and )?" + V_ASK + V_NEXT + "(?: " + V_CLOSE + ")*$")],
+  ["next", new RegExp("\\b" + V_NEXT + " please(?: " + V_CLOSE + ")*$")],
+  ["back", new RegExp("\\b(?:go back|previous slide)(?: " + V_CLOSE + ")*$")],
+];
+const V_WHOLE = [                           // tested against a phrase said on its own
+  ["next", new RegExp("^(?:(?:" + V_OPEN + " )+(?:so |now |and )?)?" + V_ASK + V_NEXT + "(?: " + V_CLOSE + ")*$")],
+  ["back", new RegExp("^(?:(?:" + V_OPEN + " )+(?:so |now |and )?)?" + V_ASK + "(?:back|previous)(?: slide)?(?: " + V_CLOSE + ")*$")],
+];
 const V_LABEL = { off: "VOICE OFF", on: "VOICE ON", wait: "VOICE ...", paused: "VOICE PAUSED", blocked: "MIC BLOCKED", none: "NO VOICE", net: "NO INTERNET", error: "VOICE ERROR" };
 const vNorm = t => t.toLowerCase().replace(/[^a-z ]+/g, " ").replace(/\s+/g, " ").trim();
-function voiceMatch(t) { for (const [c, re] of V_CMD) if (re.test(t)) return c; return null; }
-function voxHTML() { return `<button id="vox" class="sndb ${voice === "on" ? "on" : voice === "off" ? "" : "warn"}" title="Voice control (V): say NEXT or NEXT SLIDE, GO BACK or PREVIOUS SLIDE">${V_LABEL[voice]}</button>`; }
+function voiceMatch(cand, seg) { for (const [c, re] of V_TAIL) if (re.test(cand)) return c; if (seg) for (const [c, re] of V_WHOLE) if (re.test(seg)) return c; return null; }
+function voxHTML() { return `<button id="vox" class="sndb ${voice === "on" ? "on" : voice === "off" ? "" : "warn"}" title="Voice control (V): say NEXT or NEXT SLIDE (OKAY and PLEASE around it are fine), GO BACK or PREVIOUS SLIDE">${V_LABEL[voice]}</button>`; }
 /* A far-away voice. The browser's speech recogniser has no sensitivity setting. But desktop Chrome and Edge (version 135 on) can listen to an
    audio track that the page hands them, so we open the microphone ourselves with automatic gain, amplify it, level it with a compressor and
    pass that on. If any part of this fails, or sound is clearly arriving and the recogniser returns nothing, it switches itself off and the
-   plain microphone is used, exactly as before. #boost=8 in the address changes the amount, #boost=0 turns it off. */
-const BOOST = (() => { const m = /boost=([\d.]+)/.exec(location.hash); return m ? +m[1] : 5; })();
+   plain microphone is used, exactly as before. #boost=5 in the address changes the amount, #boost=0 turns it off. */
+const BOOST = (() => { const m = /boost=([\d.]+)/.exec(location.hash); return m ? +m[1] : 10; })();
 let boost = null, boostOff = PHONE || !BOOST, boostOK = false, boostLoud = 0, boostTick = 0;
 function boostTrack() {
   if (boostOff || dict || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return Promise.resolve(null);
@@ -829,19 +845,19 @@ function voiceFeed(text, final) {          // every piece of recognised speech p
   const now = Date.now(); let t = vNorm(text || "");
   if (VDBG && (text || "").trim()) vlog({ heard: JSON.stringify(text), kind: final ? "settled" : "live", events: VD.events + 1 });
   if (vDone && now - vFiredAt > 30000) vDone = "";
-  if (final && t && !vDone && now - vFiredAt < 2000 && (voiceMatch(t) || (t === "next" ? "next" : null)) === vCmd) return;   // repeat of the phrase just acted on
+  if (final && t && !vDone && now - vFiredAt < 2000 && voiceMatch(t, t) === vCmd) return;   // repeat of the phrase just acted on
   if (!final && !t && !vPart) return;       // an empty live guess after a settled phrase changes nothing
   if (final) {                              // a settled piece of text
     vPart = "";
     if (vDone) {                            // it is (part of) a phrase we already acted on while it was still being spoken: never act on it twice
       if (vDone.startsWith(t)) { vDone = vDone.slice(t.length).trim(); t = ""; }
       else if (t.startsWith(vDone)) { t = t.slice(vDone.length).trim(); vDone = ""; }
-      else { if (voiceMatch(t) === vCmd) t = ""; vDone = ""; }                    // reworded copy of that phrase: drop it; anything else is new speech
+      else { if (voiceMatch(t, t) === vCmd) t = ""; vDone = ""; }                    // reworded copy of that phrase: drop it; anything else is new speech
     }
     if (t) vBuf = (vBuf + " " + t).trim().slice(-80);
   } else vPart = !vDone ? t : t.startsWith(vDone) ? t.slice(vDone.length).trim() : "";   // live guess: only words after the part already acted on count
   // "next" on its own counts only when it is the whole phrase, so "what comes next" does not move the slide
-  const cand = (vBuf + " " + vPart).trim(), cmd = voiceMatch(cand) || ((final ? t : vPart) === "next" ? "next" : null);
+  const cand = (vBuf + " " + vPart).trim(), cmd = voiceMatch(cand, final ? t : vPart);
   clearTimeout(vWait);
   if (cmd) vWait = setTimeout(() => voiceDo(cmd), Math.max(550, vMute - now));
 }
