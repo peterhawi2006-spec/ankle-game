@@ -161,7 +161,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--cyan);
 #screen.zoom { transition: transform 1.05s cubic-bezier(.6, 0, .9, .4); }
 #screen.quake { animation: quake .3s steps(6) 1; }
 @keyframes quake { 25% { translate: -7px 5px; } 50% { translate: 6px -4px; } 75% { translate: -4px 3px; } }
-.quiz .qk { font-family: var(--label); font-size: 13px; letter-spacing: 1px; color: var(--cyan); }
+.quiz .qk { font-family: var(--label); font-size: 13px; line-height: 1.5; letter-spacing: 1px; color: var(--cyan); }
 .quiz h2 { font-family: var(--display); font-weight: 400; font-size: 60px; line-height: 1; color: var(--yel); }
 .qopt { display: flex; align-items: center; gap: 16px; width: 100%; text-align: left; font-family: var(--body); font-size: 34px; color: var(--ink); background: #131222; border: 2px solid var(--line); padding: 12px 16px; cursor: pointer; }
 .qopt b { font-family: var(--label); font-size: 16px; color: var(--bg); background: var(--yel); padding: 6px 9px; }
@@ -540,8 +540,8 @@ const SCENES = [
 
   // =================================================================== LEVEL 06 — PLAYER 5 (locked content)
   { type: "level", lv: 5, sub: "Functional testing, sport-specific exercises and the return-to-sport decision", art: "plain", fall: "sprain" },
-  { type: "quiz", lv: 5, id: "sprain", n: 3, art: "injuries", show: [0], kicker: "REMEMBER HOW HE FELL AT THE START?", q: "WHAT DID HE INJURE?", opts: ["HIGH ANKLE SPRAIN", "LATERAL ANKLE SPRAIN", "ACHILLES TENDON RUPTURE"], ok: 1,
-    why: "His foot rolled inward. That overstretches the <b style=\"color:var(--coral)\">ATFL and CFL</b> on the outer side: a lateral ankle sprain." },
+  { type: "quiz", lv: 5, id: "sprain", n: 3, art: "injuries", kicker: "REMEMBER HOW HE FELL AT THE START?", q: "WHAT DID HE INJURE?", opts: ["HIGH ANKLE SPRAIN", "LATERAL ANKLE SPRAIN", "ACHILLES TENDON RUPTURE"], ok: 1,
+    why: "His foot rolled inward and the outer side of the ankle gave way: a <b style=\"color:var(--coral)\">lateral ankle sprain</b>. Which ligaments exactly? Keep that for the last question." },
   L(5, "RETURN TO SPORT IS A PROCESS, NOT A DATE", ["PARTICIPATION", "SPORT", "PERFORMANCE"], "Ardern 2016; Smith 2021; Physio Network review; Mass General Brigham and Sanford Health protocols", [
     S("PROCESS", C.ink, "WHAT RTS MEANS", ["Return to sport is a process with three stages, not a single day", "Planning starts on day one of rehab, not at the end"], { hl: "all" }),
     S("STAGE 1", C.yel, "RETURN TO PARTICIPATION", ["The athlete trains again but is not ready to compete", "Example: back in team training on modified drills, not yet picked for matches"], { hl: 0 }),
@@ -617,10 +617,10 @@ const SCENES = [
     S("AFTER: ACHILLES", C.purple, "AFTER CLEARANCE: ACHILLES", ["Calf weakness often remains", "So calf loading continues after discharge"], { hl: -1, stat: ["80%", "return to play"] }),
   ]),
 
-  // the last boss question: an invented example case, judged with the pass marks taught in this level
-  { type: "quiz", lv: 5, id: "rts", n: 4, pic: "athlete", cap: "EXAMPLE CASE: HIS RESULTS AFTER REHAB", kicker: "HE WANTS TO PLAY AGAIN", q: "WHICH RESULT SAYS 'NOT YET'?",
-    opts: ["Y-BALANCE: 82% OF THE HEALTHY LEG", "SIDE HOP: 96% OF THE HEALTHY LEG", "PAIN WHEN JUMPING: NONE"], ok: 0,
-    why: "Hops and Y-balance must reach <b style=\"color:var(--green)\">90% or more</b> of the healthy side. At 82% he goes back one stage and is retested later." },
+  // the last boss question: which ligaments did he injure in the fall shown at the start (the lateral ankle sprain of question 3)
+  { type: "quiz", lv: 5, id: "ligs", n: 4, art: "ligs", show: [0, 1], kicker: "HIS LATERAL ANKLE SPRAIN", q: "WHICH LIGAMENTS DID HE INJURE?",
+    opts: ["ATFL AND CFL", "AITFL AND PITFL", "DELTOID LIGAMENT"], ok: 0,
+    why: "Rolling inward overstretches the outer ligaments: the <b style=\"color:var(--yel)\">ATFL</b> first, then the <b style=\"color:var(--yel)\">CFL</b>. The PTFL is rarely involved." },
   // =================================================================== WRAP-UP
   L(5, "TAKE-HOME MESSAGES", ["POSITION DECIDES", "EXAMINE WITH INTENT", "REHAB BY CRITERIA", "RETURN IS SHARED"], "", [
     S("01", C.yel, "POSITION DECIDES THE INJURY", ["Inversion + plantarflexion: lateral sprain", "External rotation + dorsiflexion: high ankle sprain", "Forceful push-off: Achilles rupture"]),
