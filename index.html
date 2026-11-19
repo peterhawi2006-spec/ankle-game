@@ -132,8 +132,13 @@ button:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--cyan);
 .phone .hint.heard { display: block; font-size: 13px; }
 /* intro: the character, the falling letters, the zoom and the guess */
 .runner { position: absolute; left: 0; top: 0; z-index: 6; pointer-events: none; transform-origin: 50% 100%; image-rendering: pixelated; }
-.runner.fall { transition: transform .5s cubic-bezier(.55, 0, 1, .55); }
 .runner.tip { transition: transform .16s ease-in; }
+.runner.fall { transition: transform .75s cubic-bezier(.55, 0, 1, .5); }
+.title-l.remin { animation: remin .35s steps(4) 1; }
+@keyframes remin { 0% { opacity: 0; translate: 0 14px; } 100% { opacity: 1; translate: 0 0; } }
+.title-l .rem { font-size: 52px; }
+.title-l.remin .tsub { margin-top: 14px; }
+.title-l.remin .press { margin-top: 14px; }
 .slowmo { position: absolute; left: 440px; top: 226px; width: 336px; height: 312px; z-index: 7; background: #0f0e17; border: 3px solid var(--ink); box-shadow: 0 0 0 3px #0f0e17, 0 0 0 6px var(--coral); overflow: hidden; pointer-events: none; }
 .slowmo img { position: absolute; left: 0; top: 0; width: 336px; height: 312px; image-rendering: pixelated; }
 .slowmo b { position: absolute; font-family: var(--label); font-weight: 400; font-size: 12px; line-height: 1.5; letter-spacing: 1px; }
@@ -402,10 +407,41 @@ const SCENES = [
     S("LISFRANC / JONES", C.purple, "LISFRANC / JONES FRACTURE", [kv("When", "unstable Lisfranc; Jones fracture in athletes"), kv("Procedure", "ORIF or fusion; intramedullary screw")], { show: [] }),
     S("SURGERY OR NOT?", C.coral, "ACHILLES: SURGERY OR NOT?", ["Surgery slightly lowers re-rupture risk", "But adds wound infection and sural nerve risk", "With early functional rehab, outcomes are similar (Myhrvold et al., 2022)"], { show: [4] }),
   ], { view: "RIGHT ANKLE, OUTER SIDE. COLOUR = INJURED STRUCTURE" }),
-  L(3, "WEBER GUIDES THE DECISION; STABILITY MAKES IT", "front", "", [
+  // ---- how each operation is done: added on request, NOT from Person 3's document. Sources are on each lesson and on the reference pages.
+  L(3, "LATERAL SPRAIN SURGERY: BROSTROM-GOULD REPAIR", "rehab", "Hamilton 1992; AAOS technique video; FootEducation; Royal Orthopaedic Hospital", [
+    S("WHAT", C.yel, "WHAT IS DONE", ["The stretched or torn outer ligaments are tightened and fixed back to the bone", "It is done for an ankle that keeps giving way, not for pain alone", "It repairs the patient's own ligaments, so it stays the preferred operation"], { show: [0] }),
+    S("HOW", C.cyan, "HOW IT IS DONE", ["1. A cut is made over the outer side of the ankle", "2. The ATFL (and the CFL if it is loose) is shortened and fixed back to the fibula with stitches or small bone anchors", "3. Gould step: the extensor retinaculum is stitched over the repair to reinforce it and limit inversion"], { show: [0] }),
+    S("KEEP IN MIND", C.coral, "KEEP IN MIND", ["The superficial peroneal nerve is protected during the approach", "Cast or boot for about 3 to 6 weeks; full recovery takes 3 to 6 months", "Poor tissue or a failed repair: reconstruction with a tendon graft instead"], { show: [0] }),
+  ], { view: "RIGHT ANKLE, OUTER SIDE. COLOUR = INJURED STRUCTURE" }),
+  L(3, "SYNDESMOSIS SURGERY: SCREW OR SUTURE-BUTTON", "rehab", "Shimozono et al. 2019; O'Neill et al. 2024; AAOS OrthoInfo: Ankle fractures", [
+    S("WHAT", C.yel, "WHAT IS DONE", ["The fibula is put back against the tibia and held there while the ligaments heal", "Needed when the syndesmosis is unstable", "Always needed when it is injured together with a fracture"], { show: [1] }),
+    S("HOW", C.cyan, "HOW IT IS DONE", ["1. The fibula is set back in its groove on the tibia and held with a clamp", "2. Rigid option: one or two screws from the fibula into the tibia", "3. Flexible option: a suture-button, a strong cord pulled tight between two small buttons"], { show: [1] }),
+    S("KEEP IN MIND", C.coral, "SCREW OR BUTTON?", ["Screws block the joint's normal small movement and often need a second operation to take them out", "In 5 trials: broken implants 0% with a button, 25% with screws", "Poor position of the joint: 0.8% with a button, 11.5% with screws"], { show: [1] }),
+  ], { view: "RIGHT ANKLE, OUTER SIDE. COLOUR = INJURED STRUCTURE" }),
+  L(3, "ACHILLES RUPTURE SURGERY: STITCHING THE TENDON", "rehab", "AAOS OrthoInfo: Achilles tendon rupture; Healthwise 2025", [
+    S("WHAT", C.yel, "WHAT IS DONE", ["The torn ends are brought back together and stitched", "Advised mainly for competitive athletes and people who need a strong push-off", "Earlier is better: with time the tendon shortens and scars"], { show: [4] }),
+    S("HOW", C.cyan, "HOW IT IS DONE", ["Open: one longer cut at the back of the leg", "Percutaneous: several small cuts instead", "Tear in the middle: strong sutures join the two ends", "Tear at the heel: the tendon is fixed to the heel bone with anchors"], { show: [4] }),
+    S("KEEP IN MIND", C.coral, "KEEP IN MIND", ["Risks: infection, wound breakdown, nerve injury, blood clots, re-tear", "Infection may be more common after open surgery", "About 6 weeks immobilised; full recovery about 12 months", "Old tear with a gap: extra tissue is needed to bridge it"], { show: [4] }),
+  ], { view: "RIGHT ANKLE, OUTER SIDE. COLOUR = INJURED STRUCTURE" }),
+  L(3, "ACHILLES TENDINOPATHY SURGERY: THREE OPERATIONS", "rehab", "AAOS OrthoInfo: Achilles tendinitis", [
+    S("WHEN", C.yel, "WHEN", ["Only if pain persists after 6 months of non-surgical treatment", "The operation depends on where the problem is and how much of the tendon is damaged"], { show: [2, 3] }),
+    S("DEBRIDEMENT", C.cyan, "1. DEBRIDEMENT AND REPAIR", ["The damaged tendon tissue is cut out", "At the insertion, heel bone spurs are removed too", "The healthy tendon is fixed back to the heel bone with anchors and strong sutures"], { show: [3] }),
+    S("TRANSFER", C.green, "2. TENDON TRANSFER", ["Added when more than 50% of the tendon has to be removed", "The FHL tendon, which bends the big toe, is moved to the heel bone to add strength", "The big toe still moves afterwards"], { show: [2, 3] }),
+    S("RECESSION", C.purple, "3. GASTROCNEMIUS RECESSION", ["One of the two calf muscles is lengthened to improve ankle motion", "For patients who still cannot bend the foot up well despite consistent stretching", "Through an open cut, or a small cut with a camera"], { show: [2] }),
+    S("KEEP IN MIND", C.coral, "KEEP IN MIND", ["Rehabilitation can take up to 12 months", "After debridement, up to 75% get back to their previous activity level", "Pain continues in about 20 to 30% of patients", "The more tendon involved, the longer the recovery"], { show: [2, 3] }),
+  ], { view: "RIGHT ANKLE, OUTER SIDE. COLOUR = INJURED STRUCTURE" }),
+  L(3, "MIDFOOT SURGERY: LISFRANC AND JONES FRACTURE", "front", "AAOS OrthoInfo: Lisfranc injury; Attia et al. 2021; Watson et al. 2020", [
+    S("LISFRANC 1", C.yel, "LISFRANC: INTERNAL FIXATION", ["A cut on top of the foot; the bones are put back in place", "They are held with plates or screws", "The metal may come out 3 to 5 months later, because it crosses joints that normally move"]),
+    S("LISFRANC 2", C.cyan, "LISFRANC: FUSION", ["For severe injuries, such as a complete dislocation with no fracture", "The cartilage is removed and the bones are pressed together with plates, screws or staples so they heal as one", "The metal usually stays in"]),
+    S("JONES", C.green, "JONES FRACTURE: A SCREW INSIDE THE BONE", ["A break at the base of the 5th metatarsal, known for slow healing and breaking again", "Through a small cut, a screw is passed down the inside of the bone across the break", "Athletes: back to play in 9.6 weeks with a screw, 13.1 weeks without surgery"]),
+    S("KEEP IN MIND", C.coral, "KEEP IN MIND", ["Lisfranc: no weight on the foot for 6 to 8 weeks; full return can take 6 to 12 months", "Lisfranc: arthritis can still develop after a good repair", "Jones: 98.8% return to play with a screw, 71.6% without surgery", "Jones: about 1 in 10 breaks again"]),
+  ]),
+  L(3, "WEBER GUIDES THE DECISION; STABILITY MAKES IT", "front", "Fixation and healing times: AAOS OrthoInfo: Ankle fractures", [
     S("WEBER A", C.yel, "A: BELOW THE SYNDESMOSIS", [kv("Usually", "stable"), kv("Management", "conservative: boot or brace, early weight-bearing as tolerated")], { sub: "Ankle fractures: surgery or not?", show: [10, 7] }),
     S("WEBER B", C.cyan, "B: AT THE SYNDESMOSIS", [kv("Usually", "depends on the medial side"), kv("Stable", "deltoid and medial malleolus intact, no widening on stress / weight-bearing X-ray: boot"), kv("Unstable", "medial clear space widening, bimalleolar: ORIF")], { show: [10, 8] }),
     S("WEBER C", C.coral, "C: ABOVE THE SYNDESMOSIS", [kv("Usually", "unstable (syndesmosis torn)"), kv("Management", "ORIF of the fibula + syndesmotic fixation (screw or suture-button)")], { show: [10, 9] }),
+    S("ORIF", C.purple, "HOW ORIF IS DONE", ["ORIF: through a cut, the bone is put back in place and held with metal", "Fibula: a plate and screws, sometimes a rod or a single screw", "Medial malleolus: one or two screws", "Syndesmosis: one or more screws, or a suture-button"], { show: [10, 8] }),
+    S("AFTER", C.cyan, "AFTER THE OPERATION", ["Early healing takes at least 6 weeks; complete healing 10 to 12 weeks", "Putting weight on it too early can stop the bone healing properly", "Normal activities in about 3 to 4 months"], { show: [10, 8] }),
     S("KEY POINT", C.green, "KEY POINT", ["The letter suggests the plan, but stability decides it"], { art: "fracture", anim: [0, 0, 0, 0, 0, 0, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], rest: 3, shake: true, sfx: "snap" }),
   ]),
   L(3, "TAKE-HOME MESSAGES: PART 3", ["HISTORY AND EXAM", "OTTAWA FIRST", "COMPARE SIDES", "CONSERVATIVE FIRST", "SURGERY AND PHYSIO"], "", [
@@ -546,50 +582,63 @@ const SCENES = [
     S("04", C.green, "RETURN IS SHARED", ["90% symmetry + pain-free loading + confidence + medical clearance"]),
   ], { chip: "WRAP-UP", who: "ALL" }),
   { type: "refs", lv: 5, steps: [
-    ["<b>Ardern</b> et al. (2016). Consensus statement on return to sport. Br J Sports Med, 50(14), 853-864.",
+    ["<b>AAOS</b> (n.d.). Achilles tendinitis. OrthoInfo, American Academy of Orthopaedic Surgeons. orthoinfo.org",
+     "<b>AAOS</b> (n.d.). Achilles tendon rupture (tear). OrthoInfo, American Academy of Orthopaedic Surgeons. orthoinfo.org",
+     "<b>AAOS</b> (n.d.). Ankle fractures (broken ankle). OrthoInfo, American Academy of Orthopaedic Surgeons. orthoinfo.org",
+     "<b>AAOS</b> (n.d.). Lisfranc (midfoot) injury. OrthoInfo, American Academy of Orthopaedic Surgeons. orthoinfo.org",
+     "<b>AAOS</b> (n.d.). Modified Brostrom procedure with suture tape augmentation: surgical technique [video]. aaos.org",
+     "<b>Ardern</b> et al. (2016). Consensus statement on return to sport. Br J Sports Med, 50(14), 853-864.",
+     "<b>Attia</b> et al. (2021). Return to play and fracture union after surgery for Jones fractures. AJSM, 49(12), 3422-3436.",
      "<b>Bachmann</b> et al. (2003). Accuracy of Ottawa ankle rules: systematic review. BMJ, 326, 417.",
      "<b>BC Medical Journal</b> (2016). Achilles tendon ruptures: a review for primary care. BCMJ, 58(9), 520-521.",
      "<b>Bennell</b> et al. (1998). Reliability of a weight-bearing lunge measure of ankle dorsiflexion. Aust J Physiother, 44(3), 175-180.",
      "<b>Brorsson</b>, Willy, Tranberg et al. Heel-rise height deficit 1 year after Achilles tendon rupture.",
-     "<b>Docherty</b> et al. (2005). Functional-performance deficits with ankle instability. J Athl Train, 40(1), 30-34.",
-     "<b>Doherty</b> et al. (2014). Incidence and prevalence of ankle sprain injury. Sports Med, 44, 123-140.",
+     "<b>Docherty</b> et al. (2005). Functional-performance deficits with ankle instability. J Athl Train, 40(1), 30-34."],
+    ["<b>Doherty</b> et al. (2014). Incidence and prevalence of ankle sprain injury. Sports Med, 44, 123-140.",
      "<b>Doral</b> et al. (2010). Functional anatomy of the Achilles tendon. KSSTA, 18, 638-643.",
      "<b>Dubois</b> & Esculier (2020). Soft-tissue injuries simply need PEACE and LOVE. Br J Sports Med, 54, 72-73.",
+     "<b>FootEducation</b> (n.d.). Brostrom procedure: lateral ankle ligament reconstruction. footeducation.com",
      "<b>Glazer</b> (2009). Injury-Psychological Readiness to Return to Sport (I-PRRS) scale. J Athl Train, 44(2), 185-189.",
+     "<b>Hamilton</b> (1992). The modified Brostrom procedure for acute and chronic ankle instability. Oper Tech Orthop, 2(3), 142-145.",
+     "<b>Healthwise</b> (2025). Surgery for an Achilles tendon rupture. Ignite Healthwise.",
      "<b>Hertel</b> (2002). Functional anatomy and pathomechanics of lateral ankle instability. J Athl Train, 37(4), 364-375.",
-     "<b>Hiller</b> et al. (2006). The Cumberland Ankle Instability Tool. Arch Phys Med Rehabil, 87(9), 1235-1241."],
-    ["<b>Kaminski</b> et al. (2013). NATA position statement: ankle sprains in athletes. J Athl Train, 48(4), 528-545.",
-     "<b>Kansas Health System</b>. Functional testing protocol: ankle.",
+     "<b>Hiller</b> et al. (2006). The Cumberland Ankle Instability Tool. Arch Phys Med Rehabil, 87(9), 1235-1241.",
+     "<b>IJSPT</b> (2026). Quantifying the single-leg heel-rise after Achilles tendon rupture, 21(1).",
+     "<b>J Athl Train</b> (2023). Compensatory kinetics during the side-hop test in chronic ankle instability, 58(11-12).",
+     "<b>Kaminski</b> et al. (2013). NATA position statement: ankle sprains in athletes. J Athl Train, 48(4), 528-545."],
+    ["<b>Kansas Health System</b>. Functional testing protocol: ankle.",
      "<b>Martin</b> et al. (2005). Evidence of validity for the Foot and Ankle Ability Measure. Foot Ankle Int, 26(11), 968-983.",
      "<b>Martin</b> et al. (2018). Midportion Achilles tendinopathy revision 2018. JOSPT, 48(5), A1-A38.",
      "<b>Martin</b> et al. (2021). Lateral ankle ligament sprains: clinical practice guideline. JOSPT, 51(4), CPG1-CPG80.",
-     "<b>Mass General Brigham</b>. Rehabilitation protocol for lateral ankle sprain (non-operative).",
      "<b>Mass General Brigham</b> (2021). Rehabilitation protocol for Achilles tendon repair.",
+     "<b>Mass General Brigham</b>. Rehabilitation protocol for lateral ankle sprain (non-operative).",
      "<b>Merck Manual</b> Professional Version. Achilles tendon tears.",
      "<b>Moore</b>, Dalley & Agur (2022). Clinically Oriented Anatomy, 9th ed. Wolters Kluwer.",
      "<b>Myhrvold</b> et al. (2022). Nonoperative or surgical treatment of acute Achilles tendon rupture. N Engl J Med, 386, 1409-1420.",
      "<b>Neumann</b> (2017). Kinesiology of the Musculoskeletal System, 3rd ed. Elsevier.",
-     "<b>Nilsson-Helander</b> et al. (2007). The Achilles tendon Total Rupture Score (ATRS). Am J Sports Med, 35(3), 421-426."],
+     "<b>Nilsson-Helander</b> et al. (2007). The Achilles tendon Total Rupture Score (ATRS). Am J Sports Med, 35(3), 421-426.",
+     "<b>O'Neill</b>, Reiter & Amendola (2024, Dec 18). [Article on surgical management of ankle syndesmosis injuries]. AAOS Now."],
     ["<b>Ochen</b> et al. (2019). Operative vs nonoperative treatment of Achilles ruptures. BMJ, 364, k5120.",
      "<b>orthopt.org</b>. Achilles tendinopathy clinical practice guideline (as supplied by Person 4).",
      "<b>Plisky</b> et al. (2009). Instrumented star excursion balance test: reliability. N Am J Sports Phys Ther, 4(2), 92-99.",
+     "<b>Royal Orthopaedic Hospital</b> NHS Foundation Trust (n.d.). Ankle stabilisation procedure. roh.nhs.uk",
      "<b>Sanford Health</b>. High ankle sprain rehabilitation guideline; Ankle return-to-sport assessment.",
+     "<b>Shimozono</b> et al. (2019). Suture button versus syndesmotic screw for syndesmosis injuries. Am J Sports Med, 47(11), 2764-2771.",
      "<b>Shrier</b> (2015). StARRT framework for return-to-play decision-making. Br J Sports Med, 49(20), 1311-1315.",
      "<b>Silbernagel</b> et al. (2010). Heel-rise endurance test after Achilles rupture. KSSTA, 18(2), 258-264.",
      "<b>Singh</b> (2015). Acute Achilles tendon rupture. BMJ, 351, h4722.",
      "<b>Sman</b> et al. (2013). Clinical tests for ankle syndesmosis injury: systematic review. Br J Sports Med, 47, 620-628.",
      "<b>Sman</b> et al. (2015). Clinical tests for ankle syndesmosis injury. Br J Sports Med, 49(5), 323-329.",
-     "<b>Smith</b> et al. (2021). Return to sport after lateral ankle sprain: PAASS framework. Br J Sports Med, 55(22).",
-     "<b>van Dijk</b> et al. (1996). Physical examination is sufficient for the diagnosis of sprained ankles. JBJS Br, 78, 958-962."],
-    ["<b>van Dijk</b> et al. (2016). Acute isolated syndesmotic injuries: ESSKA-AFAS consensus. KSSTA, 24(4), 1200-1227.",
+     "<b>Smith</b> et al. (2021). Return to sport after lateral ankle sprain: PAASS framework. Br J Sports Med, 55(22)."],
+    ["<b>van Dijk</b> et al. (1996). Physical examination is sufficient for the diagnosis of sprained ankles. JBJS Br, 78, 958-962.",
+     "<b>van Dijk</b> et al. (2016). Acute isolated syndesmotic injuries: ESSKA-AFAS consensus. KSSTA, 24(4), 1200-1227.",
      "<b>Vuurberg</b> et al. (2018). Diagnosis, treatment and prevention of ankle sprains. Br J Sports Med, 52(15), 956.",
+     "<b>Watson</b> et al. (2020). Early return to play after intramedullary screw fixation of acute Jones fractures. Orthop J Sports Med.",
      "<b>Williams</b>, Jones & Amendola (2007). Syndesmotic ankle sprains in athletes. Am J Sports Med, 35(7).",
      "<b>Williams</b> & Allen (2010). Rehabilitation of syndesmotic (high) ankle sprains. Sports Health, 2(6), 460-470.",
-     "<b>Zellers</b>, Carmont & Silbernagel (2016). Return to play after Achilles tendon rupture. Br J Sports Med.",
-     "<b>Zellers</b>, Carmont & Silbernagel (2018). Achilles tendon resting angle relates to tendon length and function (PMC6047896).",
      "<b>Y-balance</b> test studies: PMC8016412; PMC3499884.",
-     "<b>J Athl Train</b> (2023). Compensatory kinetics during the side-hop test in chronic ankle instability, 58(11-12).",
-     "<b>IJSPT</b> (2026). Quantifying the single-leg heel-rise after Achilles tendon rupture, 21(1)."],
+     "<b>Zellers</b>, Carmont & Silbernagel (2016). Return to play after Achilles tendon rupture. Br J Sports Med.",
+     "<b>Zellers</b>, Carmont & Silbernagel (2018). Achilles tendon resting angle relates to tendon length and function (PMC6047896)."]
   ] },
   { type: "end" },
 ];
@@ -681,7 +730,7 @@ function render(flash) {
     screen.innerHTML = `<div class="title-l"><div class="t1">ANKLE</div><div class="t2">INJURIES</div><div class="t3">IN SPORT</div>
       <p class="tsub">From anatomy to return to sport: assessment, rehabilitation and clinical decision-making</p>
       <button class="press" id="nx">&gt; PRESS ENTER</button></div>
-      <div class="players"><small>5 PLAYERS &middot; FALL 2026</small>[Name 1] [Name 2] [Name 3]<br>[Name 4] [Name 5]</div>
+      <div class="players"><small>5 PLAYERS &middot; FALL 2026</small>Peter Hawi &middot; Abdallah Zaiter<br>Marc Mansour &middot; Kevin Sawma<br>Leena Termos</div>
       <div class="hero">${artHTML("hero", 664, 560)}</div>`;
   } else if (s.type === "map") {
     screen.innerHTML = `<div class="top"><span class="chip">LEVEL SELECT</span><h1>SIX STEPS FROM STRUCTURE TO RETURN TO SPORT</h1></div>
@@ -1024,17 +1073,23 @@ function introPlay() {
       screen.querySelectorAll(".ch, .tsub, .players").forEach(drop);
       for (let i = 0; i < 6; i++) introLater(120 + i * 110, () => sfx("tick"));
     });
-    introLater(SL + 340 + 300, () => {                                       // and falls through with the letters
+    introLater(SL + 340 + 300, () => {                                       // and drops out of the bottom of the screen with the letters
       if (intro.step !== 1) return;
-      img.classList.add("fall"); img.style.transform = `translate(${SX}px, ${SY}px) scale(${S})`;
+      img.classList.add("fall"); img.style.transform = `translate(${SX}px, 860px) scale(${S})`; sfx("move");
     });
-    introLater(SL + 340 + 300 + 520, () => {
-      if (intro.step !== 1) return;
-      sfx("hurt"); quake(); let m = 0; intro.walk = setInterval(() => { m ^= 1; img.src = R.down[m]; }, 170);
-    });
-    introLater(SL + 340 + 300 + 520 + 1300, () => { if (intro.step !== 1) return; const dive = () => { if (intro.step === 1) introDive(SX + R.ankle[0] * S, SY + R.ankle[1] * S); }; if (bossOn) bossEnter(1, dive); else dive(); });
+    introLater(SL + 340 + 300 + 1100, () => { if (intro.step === 1) introEnd(); });
   };
   requestAnimationFrame(walk);
+}
+function introEnd() {                                                        // he is gone: ask the class to remember what they saw, then the game starts
+  intro.timers.forEach(clearTimeout); intro.timers = []; clearInterval(intro.walk); intro.step = 4; bossClear();
+  screen.classList.remove("zoom", "quake"); screen.style.transform = "";
+  screen.querySelectorAll(".runner, .slowmo, .say").forEach(el => el.remove());
+  const pl = $(".players"); if (pl) { pl.classList.remove("drop"); pl.style.animationDelay = ""; }
+  const tl = $(".title-l"); if (!tl) return;
+  tl.innerHTML = `<div class="t3">HE WILL BE BACK</div><div class="t1 rem">REMEMBER</div><div class="t2 rem">HOW HE FELL</div>
+    <p class="tsub">Keep in mind what happened to his ankle. You will be asked later.</p><button class="press" id="nx">&gt; ${PHONE ? "TAP" : "PRESS ENTER"} TO START</button>`;
+  tl.classList.add("remin"); $("#nx").onclick = next; sfx("level");
 }
 /* the pixel shutter: square tiles grow until they close on one point, then shrink away from a point to open the next page */
 function introTiles(fx, fy, closing, ms, done) {
@@ -1107,7 +1162,7 @@ function next() {
     if (!introOff && !reduce && A.runner) {
       if (boss.busy) return bossEnd();
       if (intro.step === 0) { sfx("start"); return introPlay(); }
-      if (intro.step === 1) return introQuiz();
+      if (intro.step === 1) return introEnd();
       if (intro.step === 2) return introReveal();
     }
     introReset(); sfx("start"); return go(1);
