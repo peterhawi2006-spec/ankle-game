@@ -68,6 +68,10 @@ button:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--cyan);
 .bul li { font-size: 32px; line-height: 34px; padding-left: 30px; position: relative; }
 .bul li::before { content: ""; position: absolute; left: 2px; top: 10px; width: 14px; height: 14px; background: var(--k, var(--c)); }
 .bul li .hid { visibility: hidden; }
+.card.tight .bul { gap: 8px; }
+.card.tight .bul li { font-size: 28px; line-height: 30px; }
+.card.tight .bul li::before { top: 8px; }
+.card.tight .sub { font-size: 28px; }
 .bul li b { font-weight: 400; color: var(--k, var(--c)); }
 .action { font-size: 32px; line-height: 34px; border-top: 2px solid var(--line); padding-top: 12px; }
 .action b { font-weight: 400; color: var(--c); }
@@ -340,7 +344,6 @@ const SCENES = [
     S("KEY POINT", C.coral, "KEY POINT", ["Unstable injuries may need surgical fixation (for example, a suture button)", "That changes the rehab timeline"], { show: [4, 5, 6] }),
   ]),
   L(1, "2.3 ACHILLES TENDON INJURY: TENDINOPATHY AND RUPTURE", "rehab", "", [
-    S("CONTINUUM", C.ink, "ONE CONTINUUM", ["Tendinopathy and rupture sit on a continuum, so they are covered together"], { show: [2, 3, 4], blink: [] }),
     S("ANATOMY", C.yel, "ANATOMY", ["The tendon of the gastrocnemius and soleus", "Mid-portion tendinopathy is more common than insertional", "2-6 cm above the calcaneus: a watershed zone with poor blood supply"], { show: [2, 3], blink: [2] }),
     S("MOI 1", C.cyan, "MOI: TENDINOPATHY", ["Overuse and load-related", "Usually from sudden increases in training volume or intensity"], { show: [2, 3] }),
     S("MOI 2", C.coral, "MOI: RUPTURE", ["Sudden forceful push-off", "Unexpected dorsiflexion of a plantarflexed foot", "A stumble"], { show: [4], shake: true, sfx: "snap" }),
@@ -356,8 +359,8 @@ const SCENES = [
       { img: 2, c: C.coral, h: "WEBER C", where: "ABOVE THE SYNDESMOSIS", rows: [["USUALLY", "Unstable (syndesmosis torn)"], ["MANAGEMENT", "ORIF of the fibula + syndesmotic fixation (screw or suture-button)"]] },
     ] },
   L(1, "OTHER INJURIES: WHEN A SPRAIN IS NOT IMPROVING", ["LISFRANC INJURY", "TALAR OSTEOCHONDRAL LESION", "PERONEAL TENDON INJURY", "5TH METATARSAL FRACTURE"], "", [
-    S("LISFRANC", C.yel, "LISFRANC INJURY", ["MOI: axial load through a plantarflexed foot, or twisting of a fixed forefoot", "Easily missed on standard X-ray", "Look for midfoot pain and plantar ecchymosis", "Use weight-bearing films, CT or MRI", "Unstable injuries need surgery"], { sub: "When an ankle sprain is not improving as expected, consider a missed injury", hl: 0 }),
-    S("TALAR OCL", C.cyan, "TALAR OSTEOCHONDRAL LESION", ["Often follows an inversion sprain", "Think of it when a 'sprain' has persistent pain, swelling or catching", "Confirm with MRI"], { hl: 1 }),
+    S("LISFRANC", C.yel, "LISFRANC INJURY", ["MOI: axial load through a plantarflexed foot, or twisting of a fixed forefoot", "Easily missed on standard X-ray: look for abnormal alignment and widening between the first and second metatarsal", "Look for midfoot pain and plantar ecchymosis", "Use weight-bearing films, CT or MRI. MRI is particularly useful for detecting associated ligament injuries", "Unstable injuries need surgery"], { sub: "When an ankle sprain is not improving as expected, consider a missed injury", hl: 0, tight: true }),
+    S("TALAR OCL", C.cyan, "TALAR OSTEOCHONDRAL LESION", ["The smooth cartilage covering the talus becomes damaged, and the bone underneath may also be injured", "Often follows an inversion sprain", "Think of it when a 'sprain' has persistent pain, swelling or catching", "Confirm with MRI"], { hl: 1 }),
     S("PERONEAL", C.green, "PERONEAL TENDON INJURY", ["Often missed alongside lateral sprains", "Look for snapping or pain behind the lateral malleolus"], { hl: 2 }),
     S("5TH MT", C.coral, "FIFTH METATARSAL FRACTURE (JONES)", ["Avulsion: inversion with the peroneus brevis pulling", "Jones: repetitive load", "Jones fractures have a high risk of delayed or non-union because of poor blood supply"], { hl: 3 }),
   ]),
@@ -832,7 +835,7 @@ function render(flash) {
 function step(first) {
   stopTyping(false);
   const s = SCENES[si], p = s.steps[st], card = $("#card");
-  card.style.setProperty("--c", p.c);
+  card.style.setProperty("--c", p.c); card.classList.toggle("tight", !!p.tight);
   card.innerHTML = `<div class="tabs">` + s.steps.map((q, i) => `<button class="${i === st ? "cur" : ""}" data-s="${i}" style="--c:${q.c}">${q.tag}</button>`).join("") + `</div>
     <div><h2>${p.h}</h2></div>${p.sub ? `<div class="sub">${p.sub}</div>` : ""}
     ${p.stat ? `<div class="stat"><b>${p.stat[0]}</b><span>${p.stat[1]}</span></div>` : ""}
