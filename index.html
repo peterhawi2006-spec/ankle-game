@@ -936,25 +936,48 @@ function voxHTML() { return `<button id="vox" class="sndb ${voice === "on" ? "on
 /* A far-away voice. The browser's speech recogniser has no sensitivity setting. But desktop Chrome and Edge (version 135 on) can listen to an
    audio track that the page hands them, so we open the microphone ourselves with automatic gain, amplify it, level it with a compressor and
    pass that on. If any part of this fails, or sound is clearly arriving and the recogniser returns nothing, it switches itself off and the
-   plain microphone is used, exactly as before. #boost=5 in the address changes the amount, #boost=0 turns it off. */
+   plain microphone is used, exactly as before. #boost=5 in the address changes the amount, #boost=0 turns it off.
+   Room noise. Before the boost the sound is cleaned in three steps: the browser's own noise suppression (and voice isolation where the
+   computer has it), a band-pass filter that removes rumble below 140 Hz and hiss above 6 kHz, and a gate that learns the level of the room
+   and turns everything down to a fifth whenever nothing stands at least 8 dB above it. The gate never mutes fully, so a quiet far-away
+   voice still gets through, only less amplified. A 50 ms delay lets the gate open before the first sound of a word arrives.
+   #ns=0 in the address turns the filter and the gate off. */
+const NS = !/ns=0/.test(location.hash), GATE = { open: 8, closed: 0.2, hold: 0.45, rise: 0.03 };
 const BOOST = (() => { const m = /boost=([\d.]+)/.exec(location.hash); return m ? +m[1] : 10; })();
 let boost = null, boostOff = PHONE || !BOOST, boostOK = false, boostLoud = 0, boostTick = 0;
 function boostTrack() {
   if (boostOff || dict || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return Promise.resolve(null);
   if (boost && boost.track.readyState === "live") return Promise.resolve(boost.track);
-  return navigator.mediaDevices.getUserMedia({ audio: { autoGainControl: true, noiseSuppression: true, echoCancellation: false, channelCount: 1 } }).then(ms => {
+  return navigator.mediaDevices.getUserMedia({ audio: { autoGainControl: true, noiseSuppression: true, voiceIsolation: true, echoCancellation: false, channelCount: 1 } }).then(ms => {
     const c = ac(); if (!c) throw new Error("no audio");
     const src = c.createMediaStreamSource(ms), g = c.createGain(), comp = c.createDynamicsCompressor(), an = c.createAnalyser(), out = c.createMediaStreamDestination();
     g.gain.value = BOOST; comp.threshold.value = -28; comp.knee.value = 18; comp.ratio.value = 10; comp.attack.value = 0.003; comp.release.value = 0.25; an.fftSize = 1024;
-    src.connect(g); g.connect(comp); comp.connect(out); comp.connect(an);
-    boost = { ms, an, buf: new Float32Array(an.fftSize), track: out.stream.getAudioTracks()[0] };
+    let gate = null, pre = null;
+    if (NS) { const hp = c.createBiquadFilter(), lp = c.createBiquadFilter(), dl = c.createDelay(0.2); gate = c.createGain(); pre = c.createAnalyser();
+      hp.type = "highpass"; hp.frequency.value = 140; hp.Q.value = 0.7; lp.type = "lowpass"; lp.frequency.value = 6000; lp.Q.value = 0.7; dl.delayTime.value = 0.05; pre.fftSize = 512;
+      src.connect(hp); hp.connect(lp); lp.connect(pre); lp.connect(dl); dl.connect(gate); gate.connect(g); }
+    else src.connect(g);
+    g.connect(comp); comp.connect(out); comp.connect(an);
+    boost = { ms, an, buf: new Float32Array(an.fftSize), track: out.stream.getAudioTracks()[0], gate, pre, pbuf: pre && new Float32Array(pre.fftSize), floor: -60, lvl: -100, hold: 0, want: 1, gt: 0 };
+    if (NS) boost.gt = setInterval(gateTick, 20);
     clearInterval(boostTick); boostLoud = 0; boostTick = setInterval(boostWatch, 250); vlog({ boost: "on x" + BOOST + (boostOK ? ", working" : ", not proven yet") });
     return boost.track;
   }).catch(x => { boostDrop("mic: " + (x && x.name)); return null; });
 }
-function boostRelease() { clearInterval(boostTick); if (boost) { try { boost.ms.getTracks().forEach(tr => tr.stop()); } catch (_) {} boost = null; } }
+function gateTick() {                                             // 50 times a second: measure the cleaned sound, follow the room level, open or close
+  const b = boost, c = ac(); if (!b || !b.pre || !c) return;
+  b.pre.getFloatTimeDomainData(b.pbuf); let s = 0; for (let i = 0; i < b.pbuf.length; i++) s += b.pbuf[i] * b.pbuf[i];
+  const db = 20 * Math.log10(Math.sqrt(s / b.pbuf.length) + 1e-7), now = c.currentTime; b.lvl = db;
+  b.floor = Math.max(-75, db < b.floor ? b.floor + (db - b.floor) * 0.2 : Math.min(db, b.floor + GATE.rise));      // drops fast, climbs about 1.5 dB a second
+  if (db > b.floor + GATE.open) b.hold = now + GATE.hold;
+  const want = now < b.hold ? 1 : GATE.closed;
+  if (want !== b.want) { b.want = want; b.gate.gain.setTargetAtTime(want, now, want === 1 ? 0.008 : 0.12); }
+}
+function boostRelease() { clearInterval(boostTick); if (boost) { clearInterval(boost.gt); try { boost.ms.getTracks().forEach(tr => tr.stop()); } catch (_) {} boost = null; } }
 function boostDrop(why) { boostOff = true; boostRelease(); vlog({ boost: "off (" + why + ")" }); }
 function boostWatch() {                                           // sound is clearly arriving but nothing has ever been recognised: give the plain microphone back
+  if (boost && boost.pre) vlog({ noise: "room " + boost.floor.toFixed(0) + " dB, now " + boost.lvl.toFixed(0) + " dB, gate " + (boost.want === 1 ? "open" : "closed") });
+  else if (boost) vlog({ noise: "filter off (#ns=0)" });
   if (!boost || boostOK || voice !== "on") return;
   boost.an.getFloatTimeDomainData(boost.buf); let s = 0; for (let i = 0; i < boost.buf.length; i++) s += boost.buf[i] * boost.buf[i];
   if (Math.sqrt(s / boost.buf.length) > 0.03 && ++boostLoud >= 24) { boostDrop("no results"); if (rec) { const r = rec; rec = null; try { r.abort(); } catch (_) {} } nativeStart(true); voiceUI(); }
