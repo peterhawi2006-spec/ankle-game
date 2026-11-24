@@ -265,7 +265,7 @@ const SCENES = [
     S("BONES", C.ink, "BONES AND LANDMARKS", [
       { k: C.yel, t: "<b>Tibia</b>: the primary weight-bearing bone of the leg. Forms the medial malleolus" },
       { k: C.cyan, t: "<b>Fibula</b>: forms the lateral malleolus and contributes to lateral stability" },
-      { k: C.coral, t: "<b>Talus</b>: receives load from the tibia and transfers it toward the navicular (midfoot/forefoot)" },
+      { k: C.coral, t: "<b>Talus</b>: receives load from the tibia and transfers it to the calcaneus and the navicular (midfoot/forefoot)" },
       { k: C.green, t: "<b>Calcaneus</b>: forms the heel and articulates with the talus" }], { show: [0] }),
     S("TALOCRURAL", C.yel, "TALOCRURAL JOINT", ["A synovial hinge joint", "Formed by the distal tibia, fibula and talus", "Principal movements: dorsiflexion and plantarflexion"], { show: [1] }),
     S("SUBTALAR", C.cyan, "SUBTALAR JOINT", ["The articulation between the talus and calcaneus", "Contributes to the coupled movements of inversion and eversion", "Helps the foot adapt to uneven surfaces"], { art: "joints", view: V, show: [2] }),
@@ -297,7 +297,7 @@ const SCENES = [
       { k: C.yel, t: "The strongest tendon: the common tendon of the <b>gastrocnemius</b> and <b>soleus</b>" }, { k: C.yel, t: "Variable contribution from plantaris" },
       { k: C.yel, t: "Travels behind the ankle" }, { k: C.green, t: "Inserts onto the posterior <b>calcaneal tuberosity</b>" }], { show: [0] }),
     S("FORCE", C.green, "FORCE TRANSMISSION", ["Transmits triceps surae force to the calcaneus", "Produces plantarflexion and propulsion", "Its high tensile capacity supports demanding activities such as sprinting and jumping"], { show: [1] }),
-    S("ELASTIC", C.cyan, "ELASTIC ENERGY", ["During loading, the tendon can store elastic strain energy", "It releases part of it during push-off", "This improves locomotor efficiency"], { show: [0] }),
+    S("ELASTIC", C.cyan, "ELASTIC ENERGY", ["During loading, the tendon can store elastic strain energy", "It releases part of it during push-off"], { show: [0] }),
     S("ROLE", C.coral, "FUNCTIONAL ROLE", ["In walking and running, the calf-Achilles unit helps regulate forward tibial progression", "Supports push-off", "Responds to repetitive stretch-shortening demands"], { show: [1] }),
   ], { view: "RIGHT LEG, OUTER SIDE" }),
   L(0, "ANKLE MOVEMENTS & ARTHROKINEMATICS", "biomech", "Neumann 2017", [
@@ -309,11 +309,10 @@ const SCENES = [
     S("CLOSED CHAIN", C.green, "CLOSED-CHAIN TALOCRURAL MOTION", ["With the foot planted, the tibia progresses forward over the talus in dorsiflexion", "Simplified concave-on-convex model: the tibial articular surface rolls and glides anteriorly"], { anim: [6, 5, 4, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 6, 6, 6, 6], rest: 0 }),
     S("IMPORTANCE", C.coral, "FUNCTIONAL IMPORTANCE", ["Adequate dorsiflexion and coordinated hindfoot motion are needed for walking, squatting, running, landing and adapting to uneven ground", "Arthrokinematics describes joint-surface motion", "Osteokinematics describes visible bone movement"]),
   ]),
-  L(0, "FUNCTIONAL BIOMECHANICS: WALKING, RUNNING & LANDING", ["WALKING", "RUNNING", "JUMPING AND LANDING", "STABILITY DURING SPORT"], "Neumann 2017; Hertel 2002", [
+  L(0, "FUNCTIONAL BIOMECHANICS: WALKING, RUNNING & STABILITY", ["WALKING", "RUNNING", "STABILITY DURING SPORT"], "Neumann 2017; Hertel 2002", [
     S("WALKING", C.yel, "WALKING", ["After initial contact: dorsiflexors eccentrically control foot lowering", "Midstance: plantarflexors eccentrically control forward tibial progression", "Terminal stance: plantarflexor force and Achilles elastic recoil contribute to push-off"], { hl: 0 }),
     S("RUNNING", C.cyan, "RUNNING", ["The ankle-Achilles complex experiences greater loading and elastic energy cycling than in ordinary walking", "Coordinated plantarflexor action contributes to propulsion and running economy"], { hl: 1 }),
-    S("JUMP / LAND", C.coral, "JUMPING AND LANDING", ["Take-off: plantarflexors help generate propulsion", "Landing: dorsiflexion and eccentric plantarflexor action contribute to impact attenuation", "Alongside coordinated knee and hip flexion"], { hl: 2 }),
-    S("STABILITY", C.green, "STABILITY DURING SPORT", ["Bony congruence and ligaments supply passive restraint", "Muscles and tendons provide dynamic control", "Proprioception and neuromuscular coordination help maintain balance and alignment"], { hl: 3 }),
+    S("STABILITY", C.green, "STABILITY DURING SPORT", ["Bony congruence and ligaments supply passive restraint", "Muscles and tendons provide dynamic control", "Proprioception and neuromuscular coordination help maintain balance and alignment"], { hl: 2 }),
     S("TAKE-HOME", C.purple, "TAKE-HOME MESSAGE", ["The ankle must combine mobility, shock absorption, stability and propulsion to perform efficiently during sports"], { hl: "all" }),
   ]),
 
